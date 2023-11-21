@@ -36,10 +36,10 @@ class Field:
         self.rows = ROWS
         self.cols = COLS
         self.cells = self.make_cells()
-        player_y = self.rows // 2
-        player_x = self.cols // 2
-        self.player = player(player_y, player_x)
-        self.cells[player_y][player_x].content = self.player
+        self.player_y = self.rows // 2
+        self.player_x = self.cols // 2
+        self.player = player(self.player_y, self.player_x)
+        self.cells[self.player_y][self.player_x].content = self.player
 
     def draw_cells(self):
         """выводит игровое поле на экран"""
@@ -61,20 +61,18 @@ class Field:
         key = keyboard.read_event()
         if key.event_type == keyboard.KEY_DOWN:
             if key.name == 'right':
-                print('право')
-
+                self.player_y += 1
 
         if key.event_type == keyboard.KEY_DOWN:
             if key.name == 'down':
-                print('назад')
-
+                self.player_x += 1
         if key.event_type == keyboard.KEY_DOWN:
             if key.name == 'up':
-                print('вперед')
+                self.player_x -= 1
 
         if key.event_type == keyboard.KEY_DOWN:
             if key.name == 'left':
-                print('лево')
+                self.player_y -= 1
 
 class Game:
     '''  '''
@@ -86,6 +84,7 @@ class Game:
     def run(self):
         ''' запускает главный цикл игры '''
         while self.is_game:
+            os.system('cls')
             self.MCs.draw_cells()
             self.MCs.move_player()
             
