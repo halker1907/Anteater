@@ -1,6 +1,7 @@
 import keyboard
-import os
-import random
+from os import system
+from random import randint, sample
+from sys import exit
 
 
 COLS = 20
@@ -15,6 +16,8 @@ RIGHT = 'right'
 LEFT = 'left'
 ANTHILL_MAX = '4'
 ANTHILL_MIN = '1'
+ANTS_PER_ANTHILL_MIN = 1
+ANTS_PER_ANTHILL_MAX = 10
 
 class Cell:
     '''клетка игрового поля'''
@@ -48,6 +51,8 @@ class Anthill(GameObject):
     def __init__(self, y, x, image) -> None:
         self.image = ANTHILL
         super().__init__(y, x, self.image)
+        self.ants_counter = randint(ANTS_PER_ANTHILL_MIN, ANTS_PER_ANTHILL_MAX)
+
 
 class Field:
     def __init__(self, player=Player):
@@ -60,6 +65,7 @@ class Field:
         self.cells[self.player_y][self.player_x].content = self.player
         self.anthills = self.make_anthills()
 
+
     def draw_cells(self):
         """выводит игровое поле на экран"""
 
@@ -68,12 +74,11 @@ class Field:
                 cell.draw()
             print()
             
-    
+
     def make_cells(self, cell=Cell):
         cells = [[cell(Y=y, X=x) for x in range(COLS)] for y in range(ROWS)]
         return cells
     
-
     
     def move_player(self):
         ''' перемещает игрока по полю '''
@@ -100,11 +105,36 @@ class Field:
                 self.cells[new_y][new_x].content = self.player
 
 
-    def make_anthills(self, anthill=Anthill, Y=None, X=None) -> list:
-        anthills = [anthill(random.randint(Y, X))]
+    def make_anthills(self):
+        anthills_ammount = randint(ANTHILL_MIN, ANTHILL_MAX)
+        empty_cells = self.get_empty_cells()
+        if not empty_cells:
+            print('Ошибка! На поле нет свободных клеток!')
+            exit()
+        if anthills_ammount > len(empty_cells):
+            print('Ошибка! На поле нет свободных клеток для всех муравейников!')
+            exit()
+        anthills_cells = sample(anthills_ammount, empty_cells)
+        anthills = []
+        for cell in anthills_cells:
+            new_anthill = Anthill(cell.y, cell.x)
+            cell.content = new_anthill
+            anthills.append(new_anthill)
         return anthills
 
-
+    
+    def spawn_ants(self):
+        """ 
+        выберает пустые клетки поля вокруг муравейника меняет контент одной
+        из них Ant()
+        уменьшает Anthill.ants_counter на 1
+        прекращает спаун при Anthill.ant_counter < 1
+        """
+        for anthill in self.anthills:
+            if anthill.ants_counter < 1:
+                continue
+            neigbours = []
+            anthill.y or anthill.x + 1 or -1
 
 
 class Game:
