@@ -1,6 +1,6 @@
 import keyboard
 from os import system
-from random import randint, sample
+from random import randint, sample, choice
 from sys import exit
 
 
@@ -14,8 +14,8 @@ UP = 'up'
 DOWN = 'down'
 RIGHT = 'right'
 LEFT = 'left'
-ANTHILL_MAX = '4'
-ANTHILL_MIN = '1'
+ANTHILL_MAX = 4
+ANTHILL_MIN = 1
 ANTS_PER_ANTHILL_MIN = 1
 ANTS_PER_ANTHILL_MAX = 10
 
@@ -64,6 +64,7 @@ class Field:
         self.player = player(self.player_y, self.player_x)
         self.cells[self.player_y][self.player_x].content = self.player
         self.anthills = self.make_anthills()
+        self.ants = []
 
 
     def draw_cells(self):
@@ -122,21 +123,68 @@ class Field:
             anthills.append(new_anthill)
         return anthills
 
-    
+    def get_neighbours(self, y, x):
+        neighbours_coords = []
+        for row in (-1, 0, 1):
+                for col in (-1, 0, 1):
+                    if row == 0 and col == 0:
+                        continue
+                    neighbours_coords.append((anthill.y + row, anthill.x + col))
+
     def spawn_ants(self):
-        """ 
+        """
         выберает пустые клетки поля вокруг муравейника меняет контент одной
         из них Ant()
         уменьшает Anthill.ants_counter на 1
         прекращает спаун при Anthill.ant_counter < 1
         """
         for anthill in self.anthills:
-            if anthill.ants_counter < 1:
+            if not anthill.ants_counter:
                 continue
-            neigbours = []
-            anthill.y or anthill.x + 1 or -1
+            neighbours_coords = self.get_neighbours
+            if not neighbours_coords:
+                return
+            for y, x in neighbours_coords:
+                if  y < 0 and y > self.rows:
+                    if x < 0 and x > self.cols:
+                        continue
+                if self.cells[y][x].content:
+                    continue
+                ant = Ant(y, x)
+                self.cells[y][x].content = ant
+                self.ants.append(ant)
+                anthill.ants_counter -= 1
+                break
+    
+
+    def move_ants(self):
+        ''' перемещает каждого муравья на 1 клетку '''
+        for ant in self.ants:
+            neighbourds_coords = self.get_neighbours(ant.y, ant.x)
+            if not neighbourds_coords:
+                continue
+            for y, x in neighbourds_coords:
+                if  y < 0 and y > self.rows:
+                    if x < 0 and x > self.cols:
+                        # +1 в счетчик сбежавших
+                        self.ants.remove(ant)
+                        self.cells[ant.y][ant.x].content = None
+                        break
+                    else:
+                        new_cell = self.cells[y][x]
+                        if new_cell.content:
+                            continue
+                        self.cells[ant.y][ant.x] = None
+                        new_cell.content = ant
+                        ant.y = y
+                        ant.x = x
 
 
+class Ant(GameObject):
+    def __init__(self, y, x, image) -> None:
+        self.image = ANT
+        super().__init__(y, x, self.image)
+    
 class Game:
     ''' пе '''
     game = True
@@ -149,6 +197,7 @@ class Game:
         ''' запускает главный цикл игры '''
         while self.is_game:
             self.MCs.draw_cells()
+            self.field.spawn_ants()
             self.MCs.move_player()
             
 Game()
